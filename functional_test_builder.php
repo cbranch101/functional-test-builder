@@ -8,7 +8,12 @@
 			$output = $testConfig['get_output']($input);
 			$asserts = $testConfig['asserts'];
 			$assertArgs = $testConfig['get_assert_args']($output);
+			$onTestComplete = isset($testConfig['on_test_complete']) ? $testConfig['on_test_complete'] : null;
 			self::callAsserts($asserts, $test, $assertArgs);
+			
+			if($onTestComplete) {
+				$onTestComplete($output);
+			}
 		}
 		
 		static function callAsserts($asserts, $test, $assertArgs) {
@@ -23,8 +28,7 @@
 				call_user_func_array(array($test, $assertName), $argsToAssert);
 			}
 			
-		}
-		
+		}		
 		
 		
 		
