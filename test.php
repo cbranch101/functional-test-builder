@@ -3,6 +3,10 @@
 	require_once('functional_test_builder.php');
 	
 	$expected = array(
+		'c' => array(
+			'v' => 1,
+			'test2' => 1,
+		),
 		array(
 			'1',
 			'2',
