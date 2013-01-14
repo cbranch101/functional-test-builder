@@ -7,7 +7,7 @@
 			$associatedTestClass = $configuredTest['test'];
 			$input = $configuredTest['build_input']($configuredTest['input']);
 			$extraParams = isset($configuredTest['extra_params']) ? $configuredTest['extra_params'] : array();
-			$output = $configuredTest['get_output']($input, $extraParams);
+			$output = $configuredTest['get_output']($input, $extraParams, $associatedTestClass);
 			$asserts = $configuredTest['asserts'];
 			$assertInput = $configuredTest['assert_input'];
 			$assertArgs = $configuredTest['get_assert_args']($output, $assertInput);
@@ -89,6 +89,25 @@
 			
 		}
 		
+		static function confirmExpectedWithDrillDown($currentOutput, $expected, $actual, $levels, $fullOutput = false) {
+			if($levels > 0) {
+				$levels--;
+				foreach($expected as $expectedKey => $expectedValue) {
+					$actualValue = isset($actual[$expectedKey]) ? $actual[$expectedKey] : array();
+					$nextLevel = isset($currentOutput[$expectedKey]) ? $currentOutput[$expectedKey] : array();
+					$currentOutput[$expectedKey] = self::confirmExpectedWithDrillDown($nextLevel, $expectedValue, $actualValue, $levels);
+				}
+			} else {
+				$bottomLevelOutput =  self::confirmExpected($expected, $actual);
+				if(!$fullOutput) {
+					unset($bottomLevelOutput['expected']);
+					unset($bottomLevelOutput['actual']);
+				}
+				return $bottomLevelOutput;
+			}
+			return $currentOutput;
+		}
+				
 		static function confirmThatThereIsNothingExtraInActual($expected, $actual, $errors) {
 			foreach($actual as $actualKey => $actualValue) {
 				
@@ -111,7 +130,7 @@
 				
 				$actualValue = array_key_exists($expectedKey, $actual) ? $actual[$expectedKey] : 'not_found';
 									
-				if($expectedValue == $actualValue) {
+				if($expectedValue === $actualValue) {
 					
 					$output[$expectedKey] = 'ok';
 					
